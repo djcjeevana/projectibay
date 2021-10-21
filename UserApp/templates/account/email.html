@@ -1,0 +1,117 @@
+{% extends "account/base.html" %}
+
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block head_title %}{% trans "E-mail Addresses" %}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-area">
+<div class="container">
+    <div class="breadcrumb-content">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li class="active">{% trans "E-mail Addresses" %}</li>
+        </ul>
+    </div>
+</div>
+</div>
+
+<div class="page-section mb-60">
+<div class="container">
+<h4 class="primary-btn">{% trans "E-mail Addresses" %}</h4>
+        {% if user.emailaddress_set.all %}
+        <p><h5 >{% trans 'The following e-mail addresses are associated with your account:' %}</h5></p>
+
+        <form action="{% url 'account_email' %}" class="email_list" method="post">
+          {% csrf_token %}
+          <fieldset class="blockLabels">
+
+  <table class="table">
+  <thead>
+  <tr>
+    <th>Email</th>
+    <th>Status</th>
+    <th>Prayority</th>
+  </tr>
+  </thead>
+  <tbody>
+  
+  
+          {% for emailaddress in user.emailaddress_set.all %}
+          <tr class="success">
+          <div class="ctrlHolder">
+
+
+          <td><label for="email_radio_{{forloop.counter}}" class="{% if emailaddress.primary %}primary_email{%endif%}">
+              
+              
+                 <input id="email_radio_{{forloop.counter}}" type="radio" name="email" {% if emailaddress.primary or user.emailaddress_set.count == 1 %}checked="checked"{%endif %} value="{{emailaddress.email}}"/>
+                      <h6 style="color:blue"> {{ emailaddress.email }}</h6></td>
+                      {% if emailaddress.verified %}
+                      <td><span class="verified"><h6 style="color:green">Status:- {% trans "Verified" %}</h6></span></td>
+                       {% else %}
+                       <td><span class="unverified"><h6 style="color:red">Status:- {% trans "Unverified" %}</h6></span></td>
+                        {% endif %}
+                      {% if emailaddress.primary %}<td><span class="primary"><h6>{% trans "Primary" %}</h6></span></td>
+                      {% endif %}
+                </label>
+
+          </div>
+          </tr>
+                    {% endfor %}
+                    </tbody>
+                    </table>
+
+                    <table style="width:50%">
+                      <tr>
+                        <th> <button class="register-button mt-0" type="submit" name="action_primary" >{% trans 'Make Primary' %}</button></th>
+                        <th><button class="register-button mt-0" type="submit" name="action_send" >{% trans 'Re-send Verification' %}</button></th>
+                        <th><button class="register-button mt-0" type="submit" name="action_remove" >{% trans 'Remove' %}</button></th>
+                        </tr>  
+                      </table>
+
+
+                    
+                   
+                    
+                    
+                  
+          </fieldset>
+        </form>
+
+            {% else %}
+            <p><strong>{% trans 'Warning:'%}</strong> {% trans "You currently do not have any e-mail address set up. You should really add an e-mail address so you can receive notifications, reset your password, etc." %}</p>
+
+            {% endif %}
+
+            {% if can_add_email %}
+            <h4 class="primary-btn">{% trans "Add E-mail Address" %}</h4>
+
+            <form method="post" action="{% url 'account_email' %}" class="add_email">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="register-button mt-0" name="action_add" type="submit">{% trans "Add E-mail" %}</button>
+            </form>
+            {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_body %}
+<script type="text/javascript">
+(function() {
+  var message = "{% trans 'Do you really want to remove the selected e-mail address?' %}";
+  var actions = document.getElementsByName('action_remove');
+  if (actions.length) {
+    actions[0].addEventListener("click", function(e) {
+      if (! confirm(message)) {
+        e.preventDefault();
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}
